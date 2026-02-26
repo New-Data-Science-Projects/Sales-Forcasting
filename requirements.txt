@@ -1,0 +1,12 @@
+lightgbm
+optuna
+pandas
+numpy
+scikit-learn
+matplotlib
+seaborn
+shap
+streamlit
+joblib
+pyarrow
+ipykernel
