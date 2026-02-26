@@ -1,5 +1,5 @@
 # Dự án Dự báo Doanh số với Explainable AI (XAI)
-
+- **Author:** Nguyen Van Thuc, Pham Xuan Khang
 - **Loại dự án:** Proof of Concept (PoC)
 - **Ngăn xếp công nghệ:** Python, LightGBM, SHAP, Optuna, Streamlit
 
@@ -90,23 +90,7 @@ cd sales_forecasting_xai
 
 ### 2. Thiết lập môi trường
 
-**Cách 1 – Dùng Conda (khuyến nghị nếu đã có Anaconda/Miniconda):**
-
-- Đa số hệ thống:
-
-```bash
-conda env create -f environment.yml
-conda activate sales_forecast
-```
-
-- Mac M1:
-
-```bash
-conda env create -f environment_macm1.yml
-conda activate sales_forecast
-```
-
-**Cách 2 – Dùng virtualenv (Python thuần):**
+**Dùng virtualenv (Python thuần):**
 
 ```bash
 python -m venv .venv
@@ -177,11 +161,11 @@ streamlit run app.py
 
 Nếu bạn muốn trao đổi thêm hoặc hợp tác, vui lòng liên hệ:
 
-**📧 datasciencelab.ai@gmail.com**
+**📧 thucpkbn@gmail.com**
 
 # Sales Forecasting with Explainable AI (XAI)
 
-- **Author:** Nguyen Ha DS
+- **Author:** Nguyen Van Thuc, Pham Xuan Khang
 - **Project Type:** Proof of Concept (PoC)
 - **Tech Stack:** Python, LightGBM, SHAP, Optuna, Streamlit
 
@@ -269,20 +253,6 @@ Nếu bạn muốn trao đổi thêm hoặc hợp tác, vui lòng liên hệ:
    ```
 
 2. **Set Up Environment**
-
-- For general systems:
-
-  ```bash
-  conda env create -f environment.yml
-  conda activate sales_forecast
-  ```
-
-- For Mac M1:
-
-  ```bash
-  conda env create -f environment_macm1.yml
-  conda activate sales_forecast
-  ```
 
   _You need to install Anaconda for this setup. If not, please use the below setup instead._
 
