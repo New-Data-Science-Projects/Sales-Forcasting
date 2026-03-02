@@ -1,182 +1,181 @@
-# Mô tả Dự án PoC – Dự báo Doanh số với XAI
+# PoC Project Description – Sales Forecasting with XAI
 
-## 1. Tổng quan
+## 1. Overview
 
-Đây là một dự án **Proof of Concept (PoC)** mô phỏng bài toán thực tế trong bán lẻ: dự báo doanh số bán hàng theo ngày cho từng sản phẩm tại từng cửa hàng, sử dụng dữ liệu lịch sử bán hàng kết hợp với dữ liệu thời tiết.
+This is a **Proof of Concept (PoC)** project that simulates a real-world retail problem: forecasting daily sales for each product at each store, using historical sales data combined with weather data.
 
-Mục tiêu chính không chỉ là xây dựng mô hình có độ chính xác tốt, mà còn phải **giải thích được** cách mô hình ra quyết định bằng các kỹ thuật **Explainable AI (XAI)**, giúp nhóm nghiệp vụ có thể tin tưởng và sử dụng kết quả.
+The main objective is not only to build an accurate model, but also to **explain** how the model makes decisions using **Explainable AI (XAI)** techniques, enabling business teams to trust and utilize the results.
 
-Thông qua dự án này, người học sẽ trải nghiệm đầy đủ vòng đời của một PoC trong doanh nghiệp: từ khám phá dữ liệu, xây dựng đặc trưng, huấn luyện mô hình, đánh giá đến trình bày kết quả và khuyến nghị kinh doanh.
-
----
-
-## 2. Mục tiêu của PoC
-
-- Xây dựng mô hình dự báo doanh số theo:
-  - Cửa hàng (`store`)
-  - Sản phẩm (`item`)
-  - Ngày (`date`)
-- Phân tích mối quan hệ giữa:
-  - Các đặc trưng thời gian (ngày, tuần, tháng, mùa, ngày nghỉ,…)
-  - Đặc trưng lịch sử bán hàng (lag, rolling mean/std,…)
-  - Đặc trưng cửa hàng và sản phẩm
-  - Đặc trưng thời tiết (nhiệt độ, mùa khô/mưa,…)
-- Sử dụng **XAI (SHAP)** để:
-  - Hiểu đặc trưng nào quan trọng nhất.
-  - Giải thích tại sao một ngày cụ thể lại có dự báo cao/thấp.
-- Đưa ra insight có giá trị cho:
-  - Lập kế hoạch tồn kho.
-  - Bố trí nhân sự.
-  - Lên kế hoạch khuyến mãi & marketing.
+Through this project, learners will experience the full lifecycle of an enterprise PoC: from data exploration, feature engineering, model training, evaluation, to presenting results and business recommendations.
 
 ---
 
-## 3. Dữ liệu sử dụng
+## 2. PoC Objectives
 
-### 3.1. Dữ liệu bán hàng (Sales)
+- Build a sales forecasting model by:
+  - Store (`store`)
+  - Product (`item`)
+  - Date (`date`)
+- Analyze relationships between:
+  - Temporal features (day, week, month, season, holidays, etc.)
+  - Historical sales features (lag, rolling mean/std, etc.)
+  - Store and product features
+  - Weather features (temperature, dry/wet season, etc.)
+- Use **XAI (SHAP)** to:
+  - Understand which features are most important.
+  - Explain why a specific day has a high/low forecast.
+- Deliver actionable insights for:
+  - Inventory planning.
+  - Staffing allocation.
+  - Promotions & marketing planning.
 
-Hai file dữ liệu chính:
+---
+
+## 3. Data Sources
+
+### 3.1. Sales Data
+
+Two main data files:
 
 - `2016_sales.csv`
 - `2017_sales.csv`
 
-Các cột quan trọng:
+Key columns:
 
-- `date`: Ngày bán hàng
-- `province`, `store_id`, `store_name`: Thông tin cửa hàng
-- `category`, `item_id`, `item_name`: Thông tin sản phẩm
-- `sales`: Số lượng bán được trong ngày
+- `date`: Sale date
+- `province`, `store_id`, `store_name`: Store information
+- `category`, `item_id`, `item_name`: Product information
+- `sales`: Number of units sold per day
 
-### 3.2. Dữ liệu thời tiết (Weather)
+### 3.2. Weather Data
 
 File:
 
 - `weather_data.csv`
 
-Các cột quan trọng:
+Key columns:
 
-- `date`: Ngày ghi nhận thời tiết
-- `city`: Thành phố / khu vực
-- `temperature`: Nhiệt độ
-- `humidity`: Độ ẩm
-- `season`: Mùa (ví dụ: dry/wet, summer/winter,…)
+- `date`: Weather recording date
+- `city`: City / region
+- `temperature`: Temperature
+- `humidity`: Humidity
+- `season`: Season (e.g., dry/wet, summer/winter, etc.)
 
-Sau khi tiền xử lý, dữ liệu sẽ được gộp lại thành một bảng chung phục vụ cho việc huấn luyện mô hình.
+After preprocessing, the data is merged into a single unified table for model training.
 
 ---
 
-## 4. Pha 1 – Xây dựng PoC
+## 4. Phase 1 – Building the PoC
 
-### 4.1. Tích hợp & làm sạch dữ liệu
+### 4.1. Data Integration & Cleaning
 
-- Chuẩn hóa kiểu dữ liệu (datetime, numeric, category,…).
-- Xử lý giá trị thiếu (missing values) bằng:
-  - Loại bỏ (drop) trong những trường hợp an toàn.
-  - Hoặc điền (impute) dựa trên thống kê / logic kinh doanh.
-- Xử lý outlier trong cột `sales` (do lỗi nhập liệu hoặc sự kiện bất thường).
-- Gộp dữ liệu bán hàng và thời tiết theo:
+- Standardize data types (datetime, numeric, category, etc.).
+- Handle missing values using:
+  - Dropping in safe cases.
+  - Imputation based on statistics / business logic.
+- Handle outliers in the `sales` column (due to data entry errors or anomalous events).
+- Merge sales and weather data by:
   - `date` + `province` / `city`
 
-### 4.2. Khám phá dữ liệu (EDA)
+### 4.2. Exploratory Data Analysis (EDA)
 
-- Vẽ chuỗi thời gian doanh số:
-  - Theo ngày, tuần, tháng.
-  - Theo từng cửa hàng, từng nhóm sản phẩm.
-- Kiểm tra các pattern:
-  - Mùa vụ (seasonality).
-  - Ngày cuối tuần / ngày lễ.
-  - Sản phẩm bán chạy / bán chậm.
-- Phân tích tương quan giữa:
-  - Nhiệt độ, độ ẩm, mùa.
-  - Doanh số theo thời gian.
+- Plot sales time series:
+  - By day, week, month.
+  - By each store, each product category.
+- Check for patterns:
+  - Seasonality.
+  - Weekends / holidays.
+  - Best-selling / slow-moving products.
+- Analyze correlations between:
+  - Temperature, humidity, season.
+  - Sales over time.
 
-### 4.3. Xây dựng đặc trưng (Feature Engineering)
+### 4.3. Feature Engineering
 
-Nhóm đặc trưng chính:
+Main feature groups:
 
-- **Đặc trưng thời gian**
-  - `day_of_week`, `day_of_month`, `month`, `is_weekend`, `is_holiday`,…
-- **Đặc trưng lịch sử bán hàng**
-  - Lag doanh số các ngày trước (1, 7, 14, 21, 28 ngày,…).
-  - Rolling mean/min/max/std trong các cửa sổ (7, 14, 28 ngày,…).
-  - Exponentially weighted moving average (EWMA) cho xu hướng gần.
-- **Đặc trưng cửa hàng & sản phẩm**
-  - Doanh số trung bình / tổng theo:
-    - Cửa hàng trong 7 ngày gần nhất.
-    - Sản phẩm trong 7 ngày gần nhất.
-  - Mã hóa (encoding) `store_id`, `item_id`.
-- **Đặc trưng thời tiết**
-  - Phân loại mức nhiệt độ (`temp_category`).
-  - Phân loại độ ẩm (`humidity_level`).
-  - Cờ (flag) cho mùa (`season_wet`, `season_winter`,…).
+- **Temporal Features**
+  - `day_of_week`, `day_of_month`, `month`, `is_weekend`, `is_holiday`, etc.
+- **Historical Sales Features**
+  - Sales lags from previous days (1, 7, 14, 21, 28 days, etc.).
+  - Rolling mean/min/max/std over windows (7, 14, 28 days, etc.).
+  - Exponentially weighted moving average (EWMA) for recent trends.
+- **Store & Product Features**
+  - Average / total sales by:
+    - Store over the last 7 days.
+    - Product over the last 7 days.
+  - Encoding of `store_id`, `item_id`.
+- **Weather Features**
+  - Temperature category (`temp_category`).
+  - Humidity level (`humidity_level`).
+  - Season flags (`season_wet`, `season_winter`, etc.).
 
-Kết quả cuối cùng là một bảng đặc trưng giàu thông tin dùng để huấn luyện mô hình.
+The final result is a feature-rich table used for model training.
 
-### 4.4. Mô hình hóa
+### 4.4. Modeling
 
-- Xây dựng baseline với:
-  - Mô hình đơn giản hoặc LightGBM trên tập đặc trưng cơ bản.
-- Xây dựng mô hình cải tiến:
-  - LightGBM trên full feature set (bao gồm tất cả các đặc trưng thời gian, lịch sử, cửa hàng, sản phẩm, thời tiết).
-- Chia tập train/test theo thời gian:
-  - Tránh rò rỉ dữ liệu tương lai (data leakage).
-- Đánh giá bằng các chỉ số:
+- Build a baseline with:
+  - A simple model or LightGBM on a basic feature set.
+- Build an improved model:
+  - LightGBM on the full feature set (including all temporal, historical, store, product, and weather features).
+- Split train/test by time:
+  - Avoid future data leakage.
+- Evaluate using metrics:
   - MAE (Mean Absolute Error)
   - RMSE (Root Mean Squared Error)
   - WAPE (Weighted Absolute Percentage Error)
-  - Có thể thêm cross-validation theo time series nếu cần.
-- Tối ưu siêu tham số (hyperparameter tuning) bằng **Optuna**.
+  - Time series cross-validation can be added if needed.
+- Hyperparameter tuning with **Optuna**.
 
 ### 4.5. Explainable AI (XAI)
 
-Sử dụng **SHAP (SHapley Additive exPlanations)** để:
+Use **SHAP (SHapley Additive exPlanations)** to:
 
-- Đo tầm quan trọng của từng đặc trưng ở mức:
-  - **Toàn cục (global)**: đặc trưng nào quan trọng nhất với mô hình?
-  - **Cục bộ (local)**: tại sao mô hình dự báo cao/thấp cho một ngày/cửa hàng/sản phẩm cụ thể?
-- Phân tích:
-  - Ảnh hưởng của lịch sử bán hàng ngắn hạn so với dài hạn.
-  - Khác biệt giữa các cửa hàng.
-  - Mức độ ảnh hưởng thực tế của thời tiết.
-- Vẽ các biểu đồ:
+- Measure feature importance at:
+  - **Global level**: Which features are most important to the model?
+  - **Local level**: Why does the model predict high/low for a specific day/store/product?
+- Analyze:
+  - The influence of short-term vs. long-term sales history.
+  - Differences between stores.
+  - The actual impact of weather.
+- Plot:
   - Summary plot.
   - Feature importance.
-  - Dependency plot cho các đặc trưng quan trọng (ví dụ: `item_mean_7d`).
+  - Dependency plot for key features (e.g., `item_mean_7d`).
 
-Chi tiết xem trong file: `docs/shap_analysis_summary_report.md`.
+For details, see: `docs/shap_analysis_summary_report.md`.
 
-### 4.6. Báo cáo & khuyến nghị
+### 4.6. Reporting & Recommendations
 
-Trong pha PoC, trọng tâm là:
+In the PoC phase, the focus is:
 
-- **Không chỉ trả lời “mô hình có tốt không?”**, mà còn:
-  - Mô hình giải thích được đến mức nào?
-  - Insight có hữu ích cho nghiệp vụ không?
-- Cuối cùng, nhóm sẽ:
-  - Tóm tắt độ chính xác của mô hình.
-  - Trình bày các yếu tố chính ảnh hưởng tới doanh số.
-  - Đề xuất:
-    - Có nên đưa mô hình vào giai đoạn triển khai mở rộng (Production/Phase 2) hay không.
-    - Cần thêm dữ liệu/đặc trưng gì để cải thiện.
+- **Not just answering "Is the model good?"**, but also:
+  - To what extent can the model be explained?
+  - Are the insights useful for business operations?
+- Finally, the team will:
+  - Summarize model accuracy.
+  - Present the key factors influencing sales.
+  - Recommend:
+    - Whether to proceed to the expanded deployment phase (Production/Phase 2).
+    - What additional data/features are needed to improve performance.
 
 ---
 
-## 5. Kết quả học tập (Learning Outcomes)
+## 5. Learning Outcomes
 
-Sau khi hoàn thành dự án PoC này, người học có thể:
+After completing this PoC project, learners will be able to:
 
-- Hiểu quy trình **end-to-end** của một dự án PoC trong doanh nghiệp:
-  - Thu thập – khám phá – xử lý dữ liệu.
-  - Xây dựng đặc trưng.
-  - Huấn luyện & tinh chỉnh mô hình.
-  - Giải thích kết quả và trình bày cho stakeholder.
-- Thành thạo hơn trong:
-  - Xử lý và phân tích dữ liệu chuỗi thời gian.
-  - Thiết kế đặc trưng cho bài toán forecasting.
-  - Sử dụng LightGBM và Optuna cho bài toán dự báo.
-  - Ứng dụng SHAP để giải thích mô hình.
-- Nâng cao kỹ năng:
-  - Viết báo cáo kỹ thuật.
-  - Chuyển ngôn ngữ kỹ thuật sang ngôn ngữ kinh doanh.
-  - Đề xuất khuyến nghị có thể hành động (actionable recommendations).
-
+- Understand the **end-to-end** process of an enterprise PoC project:
+  - Data collection – exploration – processing.
+  - Feature engineering.
+  - Model training & tuning.
+  - Results interpretation and stakeholder presentation.
+- Gain proficiency in:
+  - Time series data processing and analysis.
+  - Feature design for forecasting problems.
+  - Using LightGBM and Optuna for forecasting tasks.
+  - Applying SHAP for model explainability.
+- Enhance skills in:
+  - Writing technical reports.
+  - Translating technical language into business language.
+  - Providing actionable recommendations.

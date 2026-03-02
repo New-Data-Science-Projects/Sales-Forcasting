@@ -1,80 +1,80 @@
-# Báo cáo Phân tích SHAP – Mô hình Dự báo Doanh số
+# SHAP Analysis Report – Sales Forecasting Model
 
-Báo cáo này tóm tắt các insight chính rút ra từ phân tích **SHAP values** trên mô hình dự báo doanh số cho 10 cửa hàng và 35 sản phẩm. Nội dung tập trung vào:
+This report summarizes key insights from the **SHAP values** analysis on the sales forecasting model for 10 stores and 35 products. The content focuses on:
 
-- Tầm quan trọng toàn cục của nhóm đặc trưng.
-- Vai trò của lịch sử bán hàng, cửa hàng và thời tiết.
-- Giải thích chi tiết một số dự đoán cụ thể (local explanations).
+- Global importance of feature groups.
+- The role of sales history, store, and weather features.
+- Detailed explanations of specific predictions (local explanations).
 
 ---
 
-## 1. Tầm quan trọng toàn cục của nhóm đặc trưng
+## 1. Global Feature Group Importance
 
-| Nhóm đặc trưng      | Độ ảnh hưởng (%) | Giải thích                                                                 |
-| ------------------- | ---------------- | -------------------------------------------------------------------------- |
-| **Sản phẩm (Item)** | 46.4%            | Các đặc trưng theo sản phẩm như `item_mean_7d`, `item_sum_7d`,… chi phối lớn. |
-| **Lịch sử bán hàng**| 32.8%            | Các đặc trưng rolling (mean, std, lag) nắm bắt xu hướng gần rất hiệu quả.  |
-| **Cửa hàng (Store)**| 18.1%            | Hiệu suất cửa hàng ảnh hưởng ở mức trung bình đến dự báo.                 |
-| **Thời gian (Date)**| 2.2%             | Các đặc trưng `month`, `day_of_week` có ảnh hưởng nhỏ.                    |
-| **Thời tiết**       | 0.4%             | Ảnh hưởng rất hạn chế trên dữ liệu hiện tại.                              |
-| **Khác**            | 0.1%             | Chủ yếu là ID/feature ít liên quan trực tiếp đến dự đoán.                 |
+| Feature Group         | Influence (%) | Explanation                                                                 |
+| --------------------- | ------------- | --------------------------------------------------------------------------- |
+| **Product (Item)**    | 46.4%         | Product-level features such as `item_mean_7d`, `item_sum_7d`, etc. dominate. |
+| **Sales History**     | 32.8%         | Rolling features (mean, std, lag) effectively capture recent trends.         |
+| **Store**             | 18.1%         | Store performance has a moderate influence on forecasts.                     |
+| **Temporal (Date)**   | 2.2%          | Features like `month`, `day_of_week` have a small influence.                |
+| **Weather**           | 0.4%          | Very limited influence in the current dataset.                              |
+| **Other**             | 0.1%          | Mostly IDs/features with little direct contribution to predictions.         |
 
 <p align="center">
   <img src="../figures/global_feature_importance_1.png" alt="Global Feature Importance" width="600"/>
 </p>
 
-### Nhận định nghiệp vụ
+### Business Insights
 
-- **1. Đặc trưng theo sản phẩm là then chốt**
-  - Gần **50%** ảnh hưởng của mô hình đến từ nhóm đặc trưng sản phẩm.
-  - Cần ưu tiên:
-    - Phân khúc sản phẩm (hàng bán chạy, bán chậm).
-    - Quản lý tồn kho, giá và khuyến mãi theo từng nhóm sản phẩm.
+- **1. Product-level features are critical**
+  - Nearly **50%** of the model's influence comes from product-level features.
+  - Priorities should include:
+    - Product segmentation (fast-moving vs. slow-moving items).
+    - Inventory, pricing, and promotion management by product group.
 
-- **2. Lịch sử bán hàng là nền tảng**
-  - Các đặc trưng rolling và lag thể hiện xu hướng ngắn–trung hạn rất tốt.
-  - Có thể được tái sử dụng trong:
-    - Dashboard BI.
-    - Hệ thống lập kế hoạch tồn kho.
+- **2. Sales history is foundational**
+  - Rolling and lag features effectively represent short-to-medium-term trends.
+  - These can be reused in:
+    - BI dashboards.
+    - Inventory planning systems.
 
-- **3. Cửa hàng có ảnh hưởng trung bình nhưng quan trọng**
-  - Hữu ích cho:
-    - Phân bổ hàng hóa giữa các cửa hàng.
-    - Xác định cửa hàng cần hỗ trợ thêm (marketing, khuyến mãi,…).
+- **3. Store context has moderate but important influence**
+  - Useful for:
+    - Allocating goods across stores.
+    - Identifying stores that need additional support (marketing, promotions, etc.).
 
-- **4. Thời gian và thời tiết ít ảnh hưởng**
-  - Trong dataset này, seasonality và tác động thời tiết không mạnh.
-  - Có thể do:
-    - Chu kỳ mùa vụ chưa đủ rõ.
-    - Sản phẩm không quá nhạy cảm với thời tiết.
+- **4. Temporal and weather features have limited influence**
+  - In this dataset, seasonality and weather impact are not strong.
+  - Possible reasons:
+    - Seasonal patterns are not sufficiently clear.
+    - Products are not highly sensitive to weather conditions.
 
 ---
 
-## 2. Các đặc trưng có ảnh hưởng cao nhất
+## 2. Most Influential Features
 
-Những đặc trưng quan trọng nhất theo SHAP:
+The most important features according to SHAP:
 
-- **`item_mean_7d`** – Doanh số trung bình của sản phẩm trong 7 ngày gần nhất:
-  - Giá trị cao → SHAP dương (màu đỏ) → mô hình tăng dự báo.
-  - Giá trị thấp → SHAP âm (màu xanh) → mô hình giảm dự báo.
+- **`item_mean_7d`** – Average product sales over the last 7 days:
+  - High value → positive SHAP (red) → model increases forecast.
+  - Low value → negative SHAP (blue) → model decreases forecast.
 
-- **`sales_mean_28d`** – Doanh số trung bình 28 ngày:
-  - Phản ánh xu hướng dài hơi, độ ổn định của sản phẩm.
+- **`sales_mean_28d`** – 28-day average sales:
+  - Reflects longer-term trends and product stability.
 
-- **`store_mean_7d`** – Hiệu suất gần đây của cửa hàng:
-  - Điều chỉnh dự báo theo bối cảnh từng cửa hàng.
+- **`store_mean_7d`** – Recent store performance:
+  - Adjusts forecasts based on individual store context.
 
 - **`sales_mean_14d`**, **`store_sum_7d`**:
-  - Kết hợp góc nhìn ngắn hạn (7–14 ngày) ở cả mức cửa hàng và sản phẩm.
+  - Combine short-term perspectives (7–14 days) at both store and product levels.
 
-- Các đặc trưng ID như `item_id`, `store_id`:
-  - Có thể đang encode hiệu ứng cố định theo sản phẩm/cửa hàng.
+- ID features such as `item_id`, `store_id`:
+  - May be encoding fixed effects by product/store.
 
-- Các đặc trưng thời tiết như `temperature`, `season_wet`:
-  - Góp phần nhỏ, tác động yếu trong dataset này.
+- Weather features such as `temperature`, `season_wet`:
+  - Contribute minimally, with weak impact in this dataset.
 
-**Kết luận chính:**  
-Mô hình đặc biệt nhạy với **xu hướng bán hàng gần đây của sản phẩm**, hơn là yếu tố khí hậu hay mùa vụ.
+**Key Conclusion:**  
+The model is particularly sensitive to **recent product sales trends**, more than climate or seasonal factors.
 
 <p align="center">
   <img src="../figures/global_feature_importance.png" alt="Most Influential Features" width="600"/>
@@ -82,51 +82,51 @@ Mô hình đặc biệt nhạy với **xu hướng bán hàng gần đây của 
 
 ---
 
-## 3. Ảnh hưởng của đặc trưng thời tiết
+## 3. Weather Feature Influence
 
-| Đặc trưng thời tiết | Ảnh hưởng SHAP | Diễn giải                                      |
-| ------------------- | -------------- | ---------------------------------------------- |
-| `temperature`       | -0.0174        | Nhiệt độ thấp có xu hướng làm giảm dự báo.    |
-| `season_winter`     | -0.0108        | Mùa đông gắn với nhu cầu thấp hơn.            |
-| Các đặc trưng khác  | ≈ 0            | Gần như không đóng góp vào quyết định mô hình.|
+| Weather Feature   | SHAP Influence | Interpretation                                      |
+| ----------------- | -------------- | --------------------------------------------------- |
+| `temperature`     | -0.0174        | Lower temperatures tend to decrease forecasts.       |
+| `season_winter`   | -0.0108        | Winter is associated with lower demand.              |
+| Other features    | ≈ 0            | Almost no contribution to model decisions.           |
 
-- Nhìn chung:
-  - Tác động của thời tiết là **yếu** so với lịch sử bán hàng.
-  - Có thể coi như feature phụ, không phải driver chính của mô hình.
+- In general:
+  - The impact of weather is **weak** compared to sales history.
+  - It can be considered a supplementary feature, not a primary driver of the model.
 
 ---
 
-## 4. Giải thích cục bộ (Local Explanations)
+## 4. Local Explanations
 
-Dưới đây là một số ví dụ điển hình, cho thấy cách mô hình “cân” các đặc trưng để đưa ra dự báo.
+Below are some representative examples showing how the model "weighs" features to produce forecasts.
 
-### 4.1. Juice – Ba Đình Supermarket (2017-10-26)
+### 4.1. Juice – Ba Dinh Supermarket (2017-10-26)
 
-- **Thực tế**: 60.00  
-- **Dự báo**: 46.12
+- **Actual**: 60.00  
+- **Predicted**: 46.12
 
-#### Nhóm đặc trưng làm **tăng** dự báo
+#### Features that **increase** the forecast
 
-| Đặc trưng        | SHAP Effect |
+| Feature           | SHAP Effect |
+| ----------------- | ----------- |
+| `item_mean_7d`    | +15.73      |
+| `sales_mean_28d`  | +4.41       |
+| `sales_mean_14d`  | +2.02       |
+| `sales_mean_7d`   | +1.02       |
+| `item_sum_7d`     | +0.77       |
+
+#### Features that **decrease** the forecast
+
+| Feature          | SHAP Effect |
 | ---------------- | ----------- |
-| `item_mean_7d`   | +15.73      |
-| `sales_mean_28d` | +4.41       |
-| `sales_mean_14d` | +2.02       |
-| `sales_mean_7d`  | +1.02       |
-| `item_sum_7d`    | +0.77       |
-
-#### Nhóm đặc trưng làm **giảm** dự báo
-
-| Đặc trưng       | SHAP Effect |
-| ----------------| ----------- |
-| `store_sum_7d`  | -3.31       |
-| `store_mean_7d` | -0.74       |
-| `month`         | -0.47       |
-| `store_id`      | -0.27       |
-| `item_id`       | -0.08       |
+| `store_sum_7d`   | -3.31       |
+| `store_mean_7d`  | -0.74       |
+| `month`          | -0.47       |
+| `store_id`       | -0.27       |
+| `item_id`        | -0.08       |
 
 **Insight:**  
-Sản phẩm có hiệu suất rất tốt (item-level mạnh), nhưng cửa hàng lại không quá nổi bật (store-level yếu), khiến mô hình “kéo xuống” dự báo. Đây có thể là **sản phẩm tiềm năng ở một cửa hàng chưa khai thác hết**.
+The product has very strong performance (strong item-level), but the store is not particularly outstanding (weak store-level), causing the model to "pull down" the forecast. This could indicate a **high-potential product at a store that has not been fully utilized**.
 
 <p align="center">
   <img src="../figures/local_explainations1.png" alt="Juice - Ba Dinh" width="2000"/>
@@ -134,33 +134,33 @@ Sản phẩm có hiệu suất rất tốt (item-level mạnh), nhưng cửa hà
 
 ---
 
-### 4.2. Vitamins – Cửa hàng Tây Hồ (2017-12-08)
+### 4.2. Vitamins – Tay Ho Store (2017-12-08)
 
-- **Thực tế**: 14.00  
-- **Dự báo**: 14.07
+- **Actual**: 14.00  
+- **Predicted**: 14.07
 
-#### Đặc trưng làm **tăng** dự báo
+#### Features that **increase** the forecast
 
-| Đặc trưng       | SHAP Effect |
-| --------------- | ----------- |
-| `store_sum_7d`  | +0.041      |
-| `sales_min_28d` | +0.011      |
-| `season_wet`    | +0.010      |
-| `sales_std_28d` | +0.008      |
-| `sales_min_7d`  | +0.007      |
-
-#### Đặc trưng làm **giảm** dự báo
-
-| Đặc trưng        | SHAP Effect |
+| Feature          | SHAP Effect |
 | ---------------- | ----------- |
-| `item_mean_7d`   | -7.40       |
-| `sales_mean_28d` | -3.19       |
-| `sales_mean_14d` | -0.98       |
-| `sales_mean_7d`  | -0.35       |
-| `store_id`       | -0.21       |
+| `store_sum_7d`   | +0.041      |
+| `sales_min_28d`  | +0.011      |
+| `season_wet`     | +0.010      |
+| `sales_std_28d`  | +0.008      |
+| `sales_min_7d`   | +0.007      |
+
+#### Features that **decrease** the forecast
+
+| Feature           | SHAP Effect |
+| ----------------- | ----------- |
+| `item_mean_7d`    | -7.40       |
+| `sales_mean_28d`  | -3.19       |
+| `sales_mean_14d`  | -0.98       |
+| `sales_mean_7d`   | -0.35       |
+| `store_id`        | -0.21       |
 
 **Insight:**  
-Sản phẩm có lịch sử bán khá thấp trong thời gian gần (item-level yếu), nên mô hình ước lượng ở mức thấp và sát với thực tế. Điều này cho thấy mô hình **phản ánh đúng mức cầu hạn chế** của mặt hàng này.
+The product has a relatively low recent sales history (weak item-level), so the model estimates at a low level that closely matches reality. This shows the model **accurately reflects the limited demand** for this product.
 
 <p align="center">
   <img src="../figures/local_explainations2.png" alt="Vitamins - Tay Ho" width="2000"/>
@@ -168,33 +168,33 @@ Sản phẩm có lịch sử bán khá thấp trong thời gian gần (item-leve
 
 ---
 
-### 4.3. Noodles – Cửa hàng Phú Nhuận (2017-11-21)
+### 4.3. Noodles – Phu Nhuan Store (2017-11-21)
 
-- **Thực tế**: 19.00  
-- **Dự báo**: 20.78
+- **Actual**: 19.00  
+- **Predicted**: 20.78
 
-#### Đặc trưng làm **tăng** dự báo
+#### Features that **increase** the forecast
 
-| Đặc trưng         | SHAP Effect |
-| ----------------- | ----------- |
-| `store_mean_7d`   | +1.86       |
-| `store_id`        | +0.48       |
-| `store_sum_7d`    | +0.36       |
-| `sales_mean_14d`  | +0.17       |
-| `sales_mean_7d`   | +0.17       |
+| Feature            | SHAP Effect |
+| ------------------ | ----------- |
+| `store_mean_7d`    | +1.86       |
+| `store_id`         | +0.48       |
+| `store_sum_7d`     | +0.36       |
+| `sales_mean_14d`   | +0.17       |
+| `sales_mean_7d`    | +0.17       |
 
-#### Đặc trưng làm **giảm** dự báo
+#### Features that **decrease** the forecast
 
-| Đặc trưng         | SHAP Effect |
-| ----------------- | ----------- |
-| `item_mean_7d`    | -8.49       |
-| `sales_mean_28d`  | -0.31       |
-| `item_sum_7d`     | -0.26       |
-| `month`           | -0.06       |
-| `season_wet`      | -0.02       |
+| Feature            | SHAP Effect |
+| ------------------ | ----------- |
+| `item_mean_7d`     | -8.49       |
+| `sales_mean_28d`   | -0.31       |
+| `item_sum_7d`      | -0.26       |
+| `month`            | -0.06       |
+| `season_wet`       | -0.02       |
 
 **Insight:**  
-Sản phẩm không quá mạnh, nhưng cửa hàng có hiệu suất tổng thể tốt nên mô hình dự báo hơi cao hơn thực tế một chút. Đây là ví dụ cho thấy **store-level có thể “đẩy” dự báo lên**, ngay cả khi item-level không quá nổi bật.
+The product is not particularly strong, but the store has good overall performance, so the model forecasts slightly above actuals. This example shows that **store-level factors can "push up" forecasts**, even when item-level performance is not outstanding.
 
 <p align="center">
   <img src="../figures/local_explainations3.png" alt="Noodles - Phu Nhuan" width="2000"/>
@@ -202,17 +202,17 @@ Sản phẩm không quá mạnh, nhưng cửa hàng có hiệu suất tổng th�
 
 ---
 
-## 5. Biểu đồ phụ thuộc SHAP – `item_mean_7d`
+## 5. SHAP Dependency Plot – `item_mean_7d`
 
-Biểu đồ dependency plot cho `item_mean_7d` cho thấy:
+The dependency plot for `item_mean_7d` reveals:
 
-- Quan hệ gần như tuyến tính:
-  - Khi `item_mean_7d` tăng → dự báo doanh số tăng theo.
-- Một số ngưỡng đáng chú ý:
-  - **`item_mean_7d` < 20** → mô hình có xu hướng giảm dự báo.
-  - **`item_mean_7d` > 30** → mô hình tăng dự báo khá mạnh.
-- Gợi ý:
-  - Có thể dùng **ngưỡng ~30** để nhận diện các **sản phẩm bán chạy (fast-moving)** cho mục tiêu quản lý tồn kho & ưu tiên trưng bày.
+- A nearly linear relationship:
+  - As `item_mean_7d` increases → sales forecast increases accordingly.
+- Some notable thresholds:
+  - **`item_mean_7d` < 20** → the model tends to decrease the forecast.
+  - **`item_mean_7d` > 30** → the model increases the forecast significantly.
+- Suggestions:
+  - A **threshold of ~30** can be used to identify **fast-moving products** for inventory management & display prioritization.
 
 <p align="center">
   <img src="../figures/dependency_plots.png" alt="Dependency Plot" width="600"/>
@@ -220,14 +220,13 @@ Biểu đồ dependency plot cho `item_mean_7d` cho thấy:
 
 ---
 
-## 6. Kết luận & khuyến nghị
+## 6. Conclusions & Recommendations
 
-1. **Xu hướng bán hàng theo sản phẩm là driver quan trọng nhất** của mô hình.
-2. **Lịch sử bán hàng 7–28 ngày** là “lõi logic” của mô hình, cần được duy trì/chất lượng dữ liệu tốt.
-3. **Bối cảnh cửa hàng** có vai trò điều chỉnh, nhất là với các cửa hàng có hiệu suất nổi bật hoặc yếu.
-4. **Thời tiết và mùa vụ** hiện chưa thể hiện vai trò mạnh, có thể xem là feature bổ sung.
-5. Độ chính xác cao hơn vào **cuối tuần và tháng 12**, gợi ý:
-   - Tăng cường chuẩn bị tồn kho và chiến dịch khuyến mãi trong các giai đoạn này.
+1. **Product-level sales trends are the most important driver** of the model.
+2. **7–28 day sales history** is the "core logic" of the model and requires high data quality to maintain.
+3. **Store context** plays an adjusting role, especially for stores with notably strong or weak performance.
+4. **Weather and seasonality** currently do not show a strong role and can be considered supplementary features.
+5. Accuracy is higher on **weekends and in December**, suggesting:
+   - Increased inventory preparation and promotional campaigns during these periods.
 
-Báo cáo SHAP cho thấy mô hình **không phải “black box” hoàn toàn** mà có thể được giải thích một cách trực quan, từ đó hỗ trợ đội ngũ kinh doanh ra quyết định tự tin hơn.
-
+The SHAP report demonstrates that the model is **not a complete "black box"** and can be explained intuitively, thereby helping business teams make more confident decisions.
